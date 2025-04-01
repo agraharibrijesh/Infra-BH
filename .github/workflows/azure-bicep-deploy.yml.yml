@@ -3,23 +3,20 @@ name: Deploy Bicep to Azure
 on:
   push:
     branches:
-      - master  # You can adjust this based on your branch or trigger conditions
-  workflow_dispatch:  # Enables manual trigger from GitHub UI
+      - master  # Adjust to your preferred branch
+  workflow_dispatch:  # Allows manual triggering from GitHub UI
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # You can keep this as is or use a specific runner version like ubuntu-24.04
 
     steps:
-    # Step 1: Check out the repository
     - name: Checkout code
       uses: actions/checkout@v2
 
-    # Step 2: Set up Azure CLI
-    - name: Set up Azure CLI
-      uses: azure/setup-azurecli@v1
+    - name: Set up Azure CLI (v2)
+      uses: azure/setup-azurecli@v2  # Updated to v2 to avoid errors with version v1
 
-    # Step 3: Login to Azure using a Service Principal
     - name: Login to Azure
       uses: azure/login@v1
       with:
@@ -28,11 +25,9 @@ jobs:
         client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-    # Step 4: Install Bicep CLI
     - name: Install Bicep CLI
       run: az bicep install
 
-    # Step 5: Build and Deploy Bicep template to Azure
     - name: Build Bicep and Deploy to Resource Group
       run: |
         # Build the Bicep file into an ARM template
