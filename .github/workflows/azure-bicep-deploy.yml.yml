@@ -13,7 +13,7 @@ jobs:
     steps:
     # Step 1: Checkout code
     - name: Checkout code
-      uses: actions/checkout@v2.7.0  # Use a specific patch version for checkout
+      uses: actions/checkout@v3  # Use a specific patch version for checkout
 
     # Step 2: Set up Azure CLI
     - name: Set up Azure CLI
