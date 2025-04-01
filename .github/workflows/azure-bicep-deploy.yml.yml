@@ -3,23 +3,21 @@ name: Deploy Bicep to Azure
 on:
   push:
     branches:
-      - master
-  workflow_dispatch:
+      - master  # Trigger on push to master
+  workflow_dispatch:  # Allows manual triggering from GitHub UI
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     permissions:
-      id-token: write  # Ensure write access to the id-token
-      contents: read  # Required to fetch repository contents
-      actions: read  # Required to use actions
+      id-token: write  # Granting write access to the id-token
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-     # - name: Set up Azure CLI
+      #- name: Set up Azure CLI
       #  uses: azure/setup-azurecli@v2
 
       - name: Login to Azure
