@@ -32,10 +32,10 @@ jobs:
     - name: Install Bicep CLI
       run: az bicep install
 
-    # Step 5: Build and Deploy Bicep template to Azure
+    # Step 5: Build Bicep and Deploy to Resource Group
     - name: Build Bicep and Deploy to Resource Group
       run: |
-        # Build the Bicep file into an ARM template
+        # Build the Bicep file into an ARM template (JSON)
         az bicep build --file ./vm-public-subnet.bicep
         # Deploy the Bicep file to the resource group
         az deployment group create --resource-group test-env-grp --template-file ./vm-public-subnet.json --parameters adminUsername="adminuser" adminPassword="${{ secrets.ADMIN_PASSWORD }}"
