@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master  # You can adjust this based on your branch or trigger conditions
+  workflow_dispatch:  # Enables manual trigger from GitHub UI
 
 jobs:
   deploy:
@@ -31,8 +32,10 @@ jobs:
     - name: Install Bicep CLI
       run: az bicep install
 
-    # Step 5: Deploy Bicep template to Azure
-    - name: Deploy Bicep template
+    # Step 5: Build and Deploy Bicep template to Azure
+    - name: Build Bicep and Deploy to Resource Group
       run: |
-        az bicep build --file main.bicep
-        az deployment group create --resource-group test-env-grp --template-file ./vm-public-subnet.bicep --parameters adminUsername="adminuser" adminPassword="Password123!"
+        # Build the Bicep file into an ARM template
+        az bicep build --file ./vm-public-subnet.bicep
+        # Deploy the Bicep file to the resource group
+        az deployment group create --resource-group test-env-grp --template-file ./vm-public-subnet.json --parameters adminUsername="adminuser" adminPassword="${{ secrets.ADMIN_PASSWORD }}"
