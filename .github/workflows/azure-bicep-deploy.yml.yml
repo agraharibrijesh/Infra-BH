@@ -3,7 +3,7 @@ name: Deploy Bicep to Azure
 on:
   push:
     branches:
-      - main  # You can adjust this based on your branch or trigger conditions
+      - master  # You can adjust this based on your branch or trigger conditions
 
 jobs:
   deploy:
