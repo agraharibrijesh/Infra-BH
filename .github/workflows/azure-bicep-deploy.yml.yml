@@ -18,7 +18,7 @@ jobs:
 
       #- name: Set up Azure CLI
       #  uses: azure/setup-azurecli@v2
-      
+
       - name: Login to Azure
         uses: azure/login@v1
         with:
@@ -30,4 +30,4 @@ jobs:
       - name: Build Bicep and Deploy to Resource Group
         run: |
           az bicep build --file ./vm-public-subnet.bicep
-          az deployment group create --resource-group test-env-grp --template-file ./vm-public-subnet.json --parameters adminUsername="adminuser" adminPassword="${{ secrets.ADMIN_PASSWORD }}"
+          az deployment group create --resource-group test-env-grp --template-file ./vm-public-subnet.json --parameters adminUsername="${{ secrets.ADMIN_USER }}" adminPassword="${{ secrets.ADMIN_PASSWORD }}"
