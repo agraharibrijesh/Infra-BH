@@ -18,7 +18,6 @@ jobs:
 
       #- name: Set up Azure CLI
       #  uses: azure/setup-azurecli@v2
-
       - name: Login to Azure
         uses: azure/login@v1
         with:
