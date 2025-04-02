@@ -26,6 +26,5 @@ jobs:
 
       - name: Build Bicep and Deploy to Resource Group
         run: |
-          az bicep build --file ./vm-public-subnet.bicep
           az deployment group create --resource-group test-env-grp --template-file main.bicep --parameters @variable.json
 
