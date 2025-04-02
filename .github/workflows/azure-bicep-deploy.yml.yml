@@ -27,7 +27,7 @@ jobs:
 
       - name: Build Bicep and Deploy to Resource Group
         run: |
-          az deployment group create --resource-group test-env-grp --template-file ./infra1.bicep --parameters adminUsername="***" adminPassword="***"
+          az deployment group create --resource-group test-env-grp --template-file ./main.bicep --parameters adminUsername="${{ secrets.ADMIN_USER }}" adminPassword="${{ secrets.ADMIN_PASSWORD }}"
 
 
 

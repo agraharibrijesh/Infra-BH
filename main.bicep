@@ -1,253 +1,330 @@
-// Declare parameters matching the JSON file
-// param admin_username string
-param azure_region string
-// param subnet_type string
-// param instance_type string
-param vnet_id string
-param public_subnet string
-param private_subnet string
-param admin_username string
-param instance_type string
-param os_disk_size int
-param os_disk_type string
-param data_disk_size int
-param data_disk_type string
-param attach_data_disk bool
-param subnet_type string
-param ssh_public_key string
-// param os_type string
-// param nsg_id string
+param adminUsername string
+param adminPassword string
+param location string = resourceGroup().location
 
+param vm1Name string = 'vm1'
+param vm2Name string = 'vm2'
+param vm3Name string = 'vm3'
+param vm4Name string = 'vm4'
 
-resource existingRg 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
-  scope: subscription()
-  name: 'Baker002'
-}
+param vm1Size string = 'Standard_B1s'
+param vm2Size string = 'Standard_B2s'
+param vm3Size string = 'Standard_B2ms'
+param vm4Size string = 'Standard_A2_v2'
 
-output existingRgId string = existingRg.id
+param diskSizeGB1 int = 20  // Data disk size for VM1 in GB
+param diskSizeGB2 int = 30  // Data disk size for VM2 in GB
+param diskSizeGB3 int = 50  // Data disk size for VM3 in GB
+param diskSizeGB4 int = 25  // Data disk size for VM4 in GB
 
-resource vnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
-  name: vnet_id
-  location: azure_region
+param diskSku string = 'Standard_LRS'  // SKU for the disks
+
+// Create the Virtual Network and Subnet
+resource myVnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
+  name: 'myVnet'
+  location: location
   properties: {
     addressSpace: {
       addressPrefixes: [
         '10.0.0.0/16'
       ]
     }
+    subnets: [
+      {
+        name: 'default'
+        properties: {
+          addressPrefix: '10.0.0.0/24'
+        }
+      }
+    ]
   }
 }
 
-resource publicSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' = {
-  parent: vnet
-  name: public_subnet
+// Create Network Security Group (NSG)
+resource myNsg 'Microsoft.Network/networkSecurityGroups@2021-05-01' = {
+  name: 'myNsg'
+  location: location
   properties: {
-    addressPrefix: '10.0.1.0/24'
- }
-}
-
-// Private Subnet - created only if subnetType equals "private"
-resource privateSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' = {
-  parent: vnet
-  name: private_subnet
-  properties: {
-    addressPrefix: '10.0.2.0/24'
+    securityRules: [
+      {
+        name: 'Allow-RDP'
+        properties: {
+          priority: 100
+          protocol: 'Tcp'
+          access: 'Allow'
+          direction: 'Inbound'
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '3389'
+        }
+      }
+      {
+        name: 'Allow-SSH'
+        properties: {
+          priority: 110
+          protocol: 'Tcp'
+          access: 'Allow'
+          direction: 'Inbound'
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '22'
+        }
+      }
+    ]
   }
 }
 
-resource nsg 'Microsoft.Network/networkSecurityGroups@2021-05-01' = {
-  name: 'BH_NSG'
-  location: azure_region
-  properties: {
-    securityRules: [] // Define rules as needed
-  }
-}
-
-// Public IP (only if using a public subnet)
-resource publicIP 'Microsoft.Network/publicIPAddresses@2021-05-01' = if (subnet_type == 'public') {
-  name: 'centos-public-ip'
-  location: azure_region
-  properties: {
-    publicIPAllocationMethod: 'Dynamic'
-  }
-}
-
-// Network Interface
-resource nic 'Microsoft.Network/networkInterfaces@2021-05-01' = {
-  name: 'linux-nic'
-  location: azure_region
+// Network Interfaces for VMs
+resource networkInterface1 'Microsoft.Network/networkInterfaces@2021-05-01' = {
+  name: '${vm1Name}-nic'
+  location: location
   properties: {
     ipConfigurations: [
       {
-        name: 'linux-ip-config'
+        name: 'ipconfig1'
         properties: {
-          subnet: {
-            id: subnet_type == 'private' ? privateSubnet.id : publicSubnet.id
-          }
           privateIPAllocationMethod: 'Dynamic'
-          publicIPAddress: subnet_type == 'public' ? {
-            id: publicIP.id
-          } : null
+          subnet: {
+            id: myVnet.properties.subnets[0].id
+          }
         }
       }
     ]
     networkSecurityGroup: {
-      id: nsg.id
+      id: myNsg.id
     }
   }
 }
 
-
-
-// Data Disk (if enabled)
-resource dataDisk 'Microsoft.Compute/disks@2021-04-01' = if (attach_data_disk) {
-  name: 'data-disk'
-  location: azure_region
-  sku: {
-    name: data_disk_type
-  }
+resource networkInterface2 'Microsoft.Network/networkInterfaces@2021-05-01' = {
+  name: '${vm2Name}-nic'
+  location: location
   properties: {
-    creationData: {
-      createOption: 'Empty'
-    }
-    diskSizeGB: data_disk_size
-  }
-}
-
-// Virtual Machine
-resource linuxVM 'Microsoft.Compute/virtualMachines@2021-04-01' = {
-  name: 'ubuntu-vm'
-  location: azure_region
-  properties: {
-    hardwareProfile: {
-      vmSize: instance_type
-    }
-    osProfile: {
-      computerName: 'ubuntu-vm'
-      adminUsername: admin_username
-      linuxConfiguration: {
-        disablePasswordAuthentication: true
-        ssh: {
-          publicKeys: [
-            {
-              path: '/home/${admin_username}/.ssh/authorized_keys'
-              keyData: ssh_public_key
-            }
-          ]
+    ipConfigurations: [
+      {
+        name: 'ipconfig1'
+        properties: {
+          privateIPAllocationMethod: 'Dynamic'
+          subnet: {
+            id: myVnet.properties.subnets[0].id
+          }
         }
       }
+    ]
+    networkSecurityGroup: {
+      id: myNsg.id
+    }
+  }
+}
+
+resource networkInterface3 'Microsoft.Network/networkInterfaces@2021-05-01' = {
+  name: '${vm3Name}-nic'
+  location: location
+  properties: {
+    ipConfigurations: [
+      {
+        name: 'ipconfig1'
+        properties: {
+          privateIPAllocationMethod: 'Dynamic'
+          subnet: {
+            id: myVnet.properties.subnets[0].id
+          }
+        }
+      }
+    ]
+    networkSecurityGroup: {
+      id: myNsg.id
+    }
+  }
+}
+
+resource networkInterface4 'Microsoft.Network/networkInterfaces@2021-05-01' = {
+  name: '${vm4Name}-nic'
+  location: location
+  properties: {
+    ipConfigurations: [
+      {
+        name: 'ipconfig1'
+        properties: {
+          privateIPAllocationMethod: 'Dynamic'
+          subnet: {
+            id: myVnet.properties.subnets[0].id
+          }
+        }
+      }
+    ]
+    networkSecurityGroup: {
+      id: myNsg.id
+    }
+  }
+}
+
+// VM1 Definition
+resource vm1 'Microsoft.Compute/virtualMachines@2021-07-01' = {
+  name: vm1Name
+  location: location
+  properties: {
+    hardwareProfile: {
+      vmSize: vm1Size
     }
     storageProfile: {
       imageReference: {
-        publisher: 'Canonical'
-        offer: 'UbuntuServer'
-        sku: '18.04-LTS'
-        version: '18.04.202401161'
+        publisher: 'MicrosoftWindowsServer'
+        offer: 'WindowsServer'
+        sku: '2019-Datacenter'
+        version: 'latest'
       }
-      osDisk: {
-        createOption: 'FromImage'
-        managedDisk: {
-          storageAccountType: os_disk_type
-        }
-        diskSizeGB: os_disk_size
-      }
-      dataDisks: attach_data_disk ? [
+      dataDisks: [
         {
+          name: 'vm1-data-disk'
+          diskSizeGB: diskSizeGB1
           lun: 0
-          createOption: 'Attach'
+          createOption: 'Empty'
           managedDisk: {
-            id: dataDisk.id
+            storageAccountType: diskSku
           }
         }
-      ] : []
+      ]
+    }
+    osProfile: {
+      computerName: vm1Name
+      adminUsername: adminUsername
+      adminPassword: adminPassword
     }
     networkProfile: {
       networkInterfaces: [
         {
-          id: nic.id
+          id: networkInterface1.id
         }
       ]
     }
   }
 }
 
-// // Virtual Machine
-// resource linuxVM1 'Microsoft.Compute/virtualMachines@2021-04-01' = {
-//   name: 'suse-vm'
-//   location: azure_region
-//   properties: {
-//     hardwareProfile: {
-//       vmSize: instance_type
-//     }
-//     osProfile: {
-//       computerName: 'suse-vm'
-//       adminUsername: admin_username
-//       linuxConfiguration: {
-//         disablePasswordAuthentication: true
-//         ssh: {
-//           publicKeys: [
-//             {
-//               path: '/home/${admin_username}/.ssh/authorized_keys'
-//               keyData: ssh_public_key
-//             }
-//           ]
-//         }
-//       }
-//     }
-//     storageProfile: {
-//       imageReference: {
-//         publisher: 'suse'
-//         offer: 'sles-15-sp4-byos'
-//         sku: 'gen2'
-//         version: '2024.08.09'
-//       }
-//       osDisk: {
-//         createOption: 'FromImage'
-//         managedDisk: {
-//           storageAccountType: os_disk_type
-//         }
-//         diskSizeGB: os_disk_size
-//       }
-//       dataDisks: attach_data_disk ? [
-//         {
-//           lun: 0
-//           createOption: 'Attach'
-//           managedDisk: {
-//             id: dataDisk.id
-//           }
-//         }
-//       ] : []
-//     }
-//     networkProfile: {
-//       networkInterfaces: [
-//         {
-//           id: nic.id
-//         }
-//       ]
-//     }
-//   }
-// }
+// VM2 Definition
+resource vm2 'Microsoft.Compute/virtualMachines@2021-07-01' = {
+  name: vm2Name
+  location: location
+  properties: {
+    hardwareProfile: {
+      vmSize: vm2Size
+    }
+    storageProfile: {
+      imageReference: {
+        publisher: 'MicrosoftWindowsServer'
+        offer: 'WindowsServer'
+        sku: '2019-Datacenter'
+        version: 'latest'
+      }
+      dataDisks: [
+        {
+          name: 'vm2-data-disk'
+          diskSizeGB: diskSizeGB2
+          lun: 0
+          createOption: 'Empty'
+          managedDisk: {
+            storageAccountType: diskSku
+          }
+        }
+      ]
+    }
+    osProfile: {
+      computerName: vm2Name
+      adminUsername: adminUsername
+      adminPassword: adminPassword
+    }
+    networkProfile: {
+      networkInterfaces: [
+        {
+          id: networkInterface2.id
+        }
+      ]
+    }
+  }
+}
 
+// VM3 Definition
+resource vm3 'Microsoft.Compute/virtualMachines@2021-07-01' = {
+  name: vm3Name
+  location: location
+  properties: {
+    hardwareProfile: {
+      vmSize: vm3Size
+    }
+    storageProfile: {
+      imageReference: {
+        publisher: 'MicrosoftWindowsServer'
+        offer: 'WindowsServer'
+        sku: '2019-Datacenter'
+        version: 'latest'
+      }
+      dataDisks: [
+        {
+          name: 'vm3-data-disk'
+          diskSizeGB: diskSizeGB3
+          lun: 0
+          createOption: 'Empty'
+          managedDisk: {
+            storageAccountType: diskSku
+          }
+        }
+      ]
+    }
+    osProfile: {
+      computerName: vm3Name
+      adminUsername: adminUsername
+      adminPassword: adminPassword
+    }
+    networkProfile: {
+      networkInterfaces: [
+        {
+          id: networkInterface3.id
+        }
+      ]
+    }
+  }
+}
 
-
-// resource nsg 'Microsoft.Network/networkSecurityGroups@2023-02-01' = {
-//   name: nsgName
-//   location: location
-//   properties: {
-//     securityRules: [
-//       for rule in securityRules: {
-//         name: rule.name
-//         properties: {
-//           priority: rule.priority
-//           direction: rule.direction
-//           access: rule.access
-//           protocol: rule.protocol
-//           sourcePortRange: rule.sourcePortRange
-//           destinationPortRange: rule.destinationPortRange
-//           sourceAddressPrefix: rule.sourceAddressPrefix
-//           destinationAddressPrefix: rule.destinationAddressPrefix
-//         }
-//       }
-//     ]
-//   }
-// }
+// VM4 Definition
+resource vm4 'Microsoft.Compute/virtualMachines@2021-07-01' = {
+  name: vm4Name
+  location: location
+  properties: {
+    hardwareProfile: {
+      vmSize: vm4Size
+    }
+    storageProfile: {
+      imageReference: {
+        publisher: 'MicrosoftWindowsServer'
+        offer: 'WindowsServer'
+        sku: '2019-Datacenter'
+        version: 'latest'
+      }
+      dataDisks: [
+        {
+          name: 'vm4-data-disk'
+          diskSizeGB: diskSizeGB4
+          lun: 0
+          createOption: 'Empty'
+          managedDisk: {
+            storageAccountType: diskSku
+          }
+        }
+      ]
+    }
+    osProfile: {
+      computerName: vm4Name
+      adminUsername: adminUsername
+      adminPassword: adminPassword
+    }
+    networkProfile: {
+      networkInterfaces: [
+        {
+          id: networkInterface4.id
+        }
+      ]
+    }
+  }
+}
