@@ -11,6 +11,7 @@ jobs:
 
     permissions:
       id-token: write  # Granting write access to the id-token
+      
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
