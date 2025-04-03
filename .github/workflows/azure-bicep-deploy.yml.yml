@@ -29,13 +29,13 @@ jobs:
         run: |
           cat ./env_variables.txt
           export $(grep -v '^#' ./env_variables.txt | xargs)
+          echo "Resource Group Name: $RESOURCE_GROUP_NAME"
    
 
       - name: Build Bicep and Deploy to Resource Group
         run: |
-          echo "Resource Group Name: $RESOURCE_GROUP_NAME"
           bicep build main.bicep
-          az deployment group create --resource-group test-env-grp --template-file ./main.bicep --parameters adminUsername="${{ secrets.ADMIN_USER }}" adminPassword="${{ secrets.ADMIN_PASSWORD }}" --mode Complete
+          az deployment group create --resource-group "$RESOURCE_GROUP_NAME" --template-file ./main.bicep --parameters adminUsername="${{ secrets.ADMIN_USER }}" adminPassword="${{ secrets.ADMIN_PASSWORD }}" --mode Complete
 
 
 
