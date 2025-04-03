@@ -28,9 +28,9 @@ jobs:
       - name: Load environment variables from env_variables.txt
         run: |
           cat ./env_variables.txt
-          export $(grep -v '^#' ./env_variables.txt | xargs)
+          echo "RESOURCE_GROUP_NAME=$(grep -v '^#' ./env_variables.txt | xargs)" >> $GITHUB_ENV
           echo "Resource Group Name: $RESOURCE_GROUP_NAME"
-          
+
       - name: Print all environment variables
         run: |
           env  # Print all environment variables to confirm RESOURCE_GROUP_NAME is set          
