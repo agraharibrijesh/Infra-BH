@@ -27,6 +27,7 @@ jobs:
 
       - name: Load environment variables from env_variables.txt
         run: |
+          cat ./env_variables.txt
           export $(grep -v '^#' ./env_variables.txt | xargs)
    
 
