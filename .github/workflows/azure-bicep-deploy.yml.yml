@@ -6,6 +6,7 @@ on:
       - master  # Trigger on push to master
       
   workflow_dispatch:  # Allows manual triggering from GitHub UI
+  
 jobs:
   deploy:
     runs-on: ubuntu-latest
