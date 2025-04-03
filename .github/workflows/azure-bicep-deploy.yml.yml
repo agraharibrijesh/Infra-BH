@@ -25,6 +25,13 @@ jobs:
       - name: Install Bicep CLI
         run: az bicep install
 
+      - name: Load environment variables from env_variables.txt
+        run: |
+          set -a
+          source ./env_variables.txt
+          set +a
+   
+
       - name: Build Bicep and Deploy to Resource Group
         run: |
           bicep build main.bicep
