@@ -30,6 +30,10 @@ jobs:
           cat ./env_variables.txt
           export $(grep -v '^#' ./env_variables.txt | xargs)
           echo "Resource Group Name: $RESOURCE_GROUP_NAME"
+          
+      - name: Print all environment variables
+        run: |
+          env  # Print all environment variables to confirm RESOURCE_GROUP_NAME is set          
    
 
       - name: Build Bicep and Deploy to Resource Group
