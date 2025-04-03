@@ -27,9 +27,7 @@ jobs:
 
       - name: Load environment variables from env_variables.txt
         run: |
-          set -a
-          source ./env_variables.txt
-          set +a
+          export $(grep -v '^#' ./env_variables.txt | xargs)
    
 
       - name: Build Bicep and Deploy to Resource Group
