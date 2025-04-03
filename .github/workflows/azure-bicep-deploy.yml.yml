@@ -30,6 +30,7 @@ jobs:
           cat ./env_variables.txt
           RESOURCE_GROUP_NAME=$(grep -v '^#' ./env_variables.txt | cut -d '=' -f2-)
           echo "Resource Group Name: $RESOURCE_GROUP_NAME"
+          echo "RESOURCE_GROUP_NAME=$RESOURCE_GROUP_NAME" >> $GITHUB_ENV
 
       - name: Print all environment variables
         run: |
