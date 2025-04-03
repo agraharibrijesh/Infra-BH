@@ -1,4 +1,4 @@
-/*param adminUsername string
+param adminUsername string
 param adminPassword string
 param location string = resourceGroup().location
 
@@ -12,7 +12,7 @@ param diskSizeGB int = 20  // Size of the data disk in GB
 param diskSku string = 'Standard_LRS'  // SKU for the disk
 
 // Create the Virtual Network and Subnet
-resource myVnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
+/*resource myVnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
   name: 'myVnet'
   location: location
   properties: {
