@@ -163,7 +163,7 @@ resource vm1 'Microsoft.Compute/virtualMachines@2021-07-01' = {
 }
 
 // VM2 Definition
-resource vm2 'Microsoft.Compute/virtualMachines@2021-07-01' = {
+/*resource vm2 'Microsoft.Compute/virtualMachines@2021-07-01' = {
   name: vm2Name
   location: location
   properties: {
@@ -211,6 +211,6 @@ resource vm2 'Microsoft.Compute/virtualMachines@2021-07-01' = {
       ]
     }
   }
-} 
+}*/ 
 
 
