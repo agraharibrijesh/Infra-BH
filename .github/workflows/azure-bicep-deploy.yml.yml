@@ -34,18 +34,13 @@ jobs:
           echo "$key=$value" >> $GITHUB_ENV
           echo "Set $key=$value"
           fi
-          done < ./env_variables.txt
-
-      - name: Print all environment variables
-        run: |
-          env  # Print all environment variables to confirm RESOURCE_GROUP_NAME is set          
-   
-
+          done < ./env_variables.txt        
+ 
       - name: Build Bicep and Deploy to Resource Group
         run: |
           echo "Deploying to resource group: $RESOURCE_GROUP_NAME"
-          bicep build main.bicep
-          az deployment group create --resource-group $RESOURCE_GROUP_NAME --template-file ./main.bicep --parameters adminUsername="${{ secrets.ADMIN_USER }}" adminPassword="${{ secrets.ADMIN_PASSWORD }}" --mode Complete
+          bicep environment/projdev1/main.bicep
+          az deployment group create --resource-group $RESOURCE_GROUP_NAME --template-file ./environment/projdev1/main.bicep --parameters adminUsername="${{ secrets.ADMIN_USER }}" adminPassword="${{ secrets.ADMIN_PASSWORD }}" --mode Complete
 
 
 
