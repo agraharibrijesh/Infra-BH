@@ -29,12 +29,16 @@ jobs:
         run: |
           cat ./env_variables.txt
           while IFS='=' read -r key value; do
-          # Skip empty lines or comment lines (lines starting with #)
-          if [[ -n "$key" && ! "$key" =~ ^# ]]; then
-          echo "$key=$value" >> $GITHUB_ENV
-          echo "Set $key=$value"
-          fi
-          done < ./env_variables.txt        
+            # Skip empty lines or comment lines (lines starting with #)
+            if [[ -n "$key" && ! "$key" =~ ^# ]]; then
+              # Check if the variable already exists and append to it
+              if [[ -n "${!key}" ]]; then
+                value="${!key},$value"
+              fi
+              echo "$key=$value" >> $GITHUB_ENV
+              echo "Set $key=$value"
+            fi
+          done < ./env_variables.txt       
  
       - name: Build Bicep and Deploy to Resource Group
         run: |
