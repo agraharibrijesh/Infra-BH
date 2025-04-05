@@ -12,7 +12,7 @@ param diskSizeGB int = 20  // Size of the data disk in GB
 param diskSku string = 'Standard_LRS'  // SKU for the disk
 
 // Create the Virtual Network and Subnet
-resource myVnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
+/*resource myVnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
   name: 'myVnet'
   location: location
   properties: {
@@ -112,7 +112,7 @@ resource networkInterface2 'Microsoft.Network/networkInterfaces@2021-05-01' = {
 }
 
 // VM1 Definition
-/*resource vm1 'Microsoft.Compute/virtualMachines@2021-07-01' = {
+resource vm1 'Microsoft.Compute/virtualMachines@2021-07-01' = {
   name: vm1Name
   location: location
   properties: {

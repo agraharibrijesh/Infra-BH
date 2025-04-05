@@ -1,2 +1,2 @@
-#ENV=dev
+ENV=projdev1
 RESOURCE_GROUP_NAME=test-env-grp
