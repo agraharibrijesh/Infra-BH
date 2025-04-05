@@ -1,0 +1,57 @@
+name: Deploy Bicep to Azure
+
+on:
+  push:
+    branches:
+      - master  # Trigger on push to master
+      
+  workflow_dispatch:  # Allows manual triggering from GitHub UI
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write  # Granting write access to the id-token
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Install Bicep CLI
+        run: az bicep install
+
+      - name: Load environment variables from env_variables.txt
+        run: |
+          cat ./env_variables.txt
+          while IFS='=' read -r key value; do
+            # Skip empty lines or comment lines (lines starting with #)
+            if [[ -n "$key" && ! "$key" =~ ^# ]]; then
+              # Check if the variable already exists and append to it
+              if [[ -n "${!key}" ]]; then
+                value="${!key},$value"
+              fi
+              echo "$key=$value" >> $GITHUB_ENV
+              echo "Set $key=$value"
+            fi
+          done < ./env_variables.txt       
+ 
+      - name: Build Bicep and Deploy to Resource Group
+        run: |
+          echo "Deploying to resource group: $RESOURCE_GROUP_NAME"
+          cd environment/$ENV
+          pwd
+          bicep build main.bicep
+          az deployment group create \
+            --resource-group $RESOURCE_GROUP_NAME \
+            --template-file ./main.bicep \
+            --parameters adminUsername="${{ secrets.ADMIN_USER }}" \
+            adminPassword="${{ secrets.ADMIN_PASSWORD }}" \
+            --mode Complete
+
+
+
